@@ -7,20 +7,19 @@ const shortlink = require('../util/shortlink');
 const Storage = require('../Storage');
 
 async function messageElement(message, mdy = false) {
+  const ctx = require('../index.js');
   const color = (...x) => {
-    if (message.member) {
-      let hex = message.member.displayHexColor;
-      if (hex === '#000000') hex = '#FFFFFF';
-      const c = hexToRgb(hex);
-      return colors.fg.getRgb(c.r, c.g, c.b) + x.join(' ') + colors.reset;
-    } else {
-      return colors.fg.getRgb(5, 5, 5) + x.join(' ') + colors.reset;
+    const defaultHex = ctx.rc.dark === 'true' ? '#423e3e' : '#FFFFFF';
+    let hex = defaultHex;
+    if (message.member && ctx.rc.color !== 'false' && message.member.displayHexColor !== '#000000') {
+      hex = message.member.displayHexColor;
     }
+    const c = hexToRgb(hex);
+    return colors.fg.getRgb(c.r, c.g, c.b) + x.join(' ') + colors.reset;
   };
   const time = `{yellow-fg}${timestamp(message.createdAt, mdy)}{/yellow-fg}`;
   switch (message.type) {
     case 'DEFAULT': {
-      const ctx = require('../index.js');
       if (message.client.user.blocked.has(message.author.id)) {
         if (ctx.rc.blocked === 'true') return;
         return `${time} 1 Blocked message`;
